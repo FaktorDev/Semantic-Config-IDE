@@ -6,6 +6,13 @@ It turns JSONC configuration files into a structured, semantic workspace with te
 
 Live demo: [faktordev.com/ide](https://faktordev.com/ide/)
 
+## Documentation
+
+- [Directives](./DIRECTIVES.md) — JSONC directive syntax, templates, types, enums, references, validation rules.
+- [Quick Fixes](./QUICK_FIXES.md) — local editor fixes for validation and schema issues.
+- [Global Fixes](./GLOBAL_FIXES.md) — project-wide and multi-file automated fixes.
+- [Import / Export](./IMPORT_EXPORT.md) — project backup, restore, ready files export, raw files import.
+
 ---
 
 ## Why this project exists
@@ -85,6 +92,7 @@ Supported concepts include:
 * `//@local_type`
 * `//@ref_type`
 * `//@global_enum`
+* `//@local_enum`
 * `//@ref_enum`
 * `//@union[...]`
 
