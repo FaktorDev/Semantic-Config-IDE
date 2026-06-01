@@ -489,9 +489,3 @@ Excludes a property from generated/runtime output.
   }
 ]
 ```
-
-## Known limitations
-
-Stage 7 is intended to stabilize the behavior of reusable types/enums and remove legacy implicit template fallback.
-
-Until all Stage 7 implementation steps are complete, some docs may describe target behavior that is being aligned in the next implementation stages.
