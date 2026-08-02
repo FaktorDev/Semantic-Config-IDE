@@ -1,309 +1,147 @@
-# Semantic Config IDE
+# Semantic Config IDE — Documentation Contract
 
-**Semantic Config IDE** is a DSL-powered browser IDE for designing, validating, and maintaining complex configuration systems.
+Semantic Config IDE is a browser IDE for designing, validating, refactoring, and exporting large JSONC-based configuration systems.
 
-It turns JSONC configuration files into a structured, semantic workspace with templates, references, validation, code generation, cross-file navigation, visual project trees, and advanced editor tooling.
+This repository contains the documentation contract for adapting existing application or game configs to the IDE. It is intentionally self-contained so it can be uploaded together with a config archive into a new AI chat.
 
-Live demo: [faktordev.com/ide](https://faktordev.com/ide/)
+## Verified implementation snapshot
 
-## Documentation
+This documentation was reconciled with the supplied IDE frontend source snapshot:
 
-- [Directives](./DIRECTIVES.md) — JSONC directive syntax, templates, types, enums, references, validation rules.
-- [Quick Fixes](./QUICK_FIXES.md) — local editor fixes for validation and schema issues.
-- [Global Fixes](./GLOBAL_FIXES.md) — project-wide and multi-file automated fixes.
-- [Import / Export](./IMPORT_EXPORT.md) — project backup, restore, ready files export, raw files import.
+- application package: `ide-frontend`;
+- application version: `0.1.1`;
+- verification date: `2026-08-02`;
+- config format: JSONC (`.json` and `.jsonc` source files);
+- editor: Monaco;
+- generated outputs: JSON, JSON Schema, C#, TypeScript, and supported codegen strategies;
+- export visibility: `full` and `publicOnly`.
 
----
+The documentation describes implemented behavior, not a future roadmap. Any remaining limitations are explicitly marked.
 
-## Why this project exists
+## Start here
 
-Large configuration systems often start as simple JSON files and slowly become hard to maintain:
+For an AI adapting a real project:
 
-* duplicated structures;
-* broken references;
-* inconsistent enum values;
-* missing required fields;
-* unclear templates;
-* no safe refactoring;
-* weak validation;
-* no connection between config data and generated code.
+1. Read [START_HERE_FOR_AI.md](./START_HERE_FOR_AI.md).
+2. Read [CONFIG_ADAPTATION_WORKFLOW.md](./CONFIG_ADAPTATION_WORKFLOW.md).
+3. Use [DIRECTIVES.md](./DIRECTIVES.md) as the directive reference.
+4. Use [PUBLIC_EXPORT.md](./PUBLIC_EXPORT.md) when configs are shared with a client.
+5. Produce the report described in [MIGRATION_REPORT_TEMPLATE.md](./MIGRATION_REPORT_TEMPLATE.md).
 
-Semantic Config IDE solves this by adding a lightweight directive-based DSL on top of JSONC.
-The goal is to keep configs readable for humans, while giving them enough semantic meaning for tooling, validation, navigation, and generation.
+For a human user:
 
----
+- [CONFIG_MODEL.md](./CONFIG_MODEL.md) — how the IDE interprets files, configs, templates, runtime data, reusable types, and references;
+- [DIRECTIVES.md](./DIRECTIVES.md) — canonical directive syntax and placement;
+- [CONFIG_ADAPTATION_WORKFLOW.md](./CONFIG_ADAPTATION_WORKFLOW.md) — how to migrate an existing config repository;
+- [PUBLIC_EXPORT.md](./PUBLIC_EXPORT.md) — server-full and client-public export rules;
+- [IMPORT_EXPORT.md](./IMPORT_EXPORT.md) — backup, raw import, ready-files export, and conflict behavior;
+- [QUICK_FIXES.md](./QUICK_FIXES.md) — local diagnostic fixes;
+- [GLOBAL_FIXES.md](./GLOBAL_FIXES.md) — preview-first multi-file operations;
+- [EXAMPLES.md](./EXAMPLES.md) — complete examples and anti-patterns;
+- [CHAT_HANDOFF_PROMPT.md](./CHAT_HANDOFF_PROMPT.md) — ready prompt for a new chat.
+- [DOCUMENTATION_UPDATE_REPORT.md](./DOCUMENTATION_UPDATE_REPORT.md) — what was corrected, validated, and what remains risky.
 
-## Core idea
+A machine-readable summary is available in [DOCUMENTATION_MANIFEST.json](./DOCUMENTATION_MANIFEST.json).
 
-Instead of using plain JSON only, configs can contain semantic directives:
+## Core model in one example
 
 ```jsonc
 {
+  //@global_enum ItemRarity
+  "ItemRarityValues": ["Common", "Rare", "Epic"],
+
+  //@global_type ItemVisual
+  "ItemVisualShape": {
+    //@public
+    "Icon": "",
+
+    "InternalAtlasId": 0
+  },
+
   //@config Items
+  //@sort_elements ["Rarity", "GameName"]
   "Items": [
     {
       //@template
-      //@primary_key
-      "Id": "",
-      "Name": "",
+      //@codegen csharp:record
+      //@name ItemConfig
 
-      //@enum[Common,Rare,Epic,Legendary]
+      //@primary_key
+      "GameName": "",
+
+      //@public
+      "DisplayName": "",
+
+      //@ref_enum ItemRarity
       "Rarity": "Common",
 
-      //@defaultValue 1
-      "Weight": 1
-    }
-  ]
-}
-```
+      //@ref_type ItemVisual
+      "Visual": {
+        "Icon": "",
+        "InternalAtlasId": 0
+      },
 
-The IDE understands these directives and uses them to provide:
-
-* schema generation;
-* semantic validation;
-* code generation;
-* quick fixes;
-* cross-file references;
-* config graph analysis;
-* editor hints and navigation.
-
----
-
-## Features
-
-### Semantic JSONC configs
-
-Use JSONC files with comments and custom directives to describe structure, validation rules, relationships, templates, enums, defaults, and references.
-
-Supported concepts include:
-
-* `//@config`
-* `//@template`
-* `//@primary_key`
-* `//@foreign_key`
-* `//@enum[...]`
-* `//@defaultValue`
-* `//@optional`
-* `//@nullable`
-* `//@type`
-* `//@clamp`
-* `//@regex`
-* `//@global_type`
-* `//@local_type`
-* `//@ref_type`
-* `//@global_enum`
-* `//@local_enum`
-* `//@ref_enum`
-* `//@union[...]`
-
----
-
-### Template-driven configuration
-
-Templates define the expected structure of runtime config entities.
-
-The template is treated as the source of truth for:
-
-* validation;
-* generated schema;
-* generated code;
-* required fields;
-* enum values;
-* default values;
-* reference rules.
-
----
-
-### Semantic validation
-
-The IDE validates configs beyond basic JSON syntax.
-
-It can detect:
-
-* invalid JSONC;
-* missing required properties;
-* invalid enum values;
-* invalid types;
-* broken foreign keys;
-* duplicate primary keys;
-* missing primary keys;
-* constraint violations;
-* directive errors;
-* schema mismatches.
-
----
-
-### Cross-file references
-
-Configs can reference entities from other configs and files.
-
-Example:
-
-```jsonc
-{
-  //@config Recipes
-  "Recipes": [
+      //@clamp[0,100]
+      "ServerDropWeight": 0
+    },
     {
-      //@template
-      //@primary_key
-      "Id": "",
-
-      //@foreign_key Items
-      "ResultItemId": ""
+      "GameName": "iron_sword",
+      "DisplayName": "Iron Sword",
+      "Rarity": "Common",
+      "Visual": {
+        "Icon": "items/iron_sword.png",
+        "InternalAtlasId": 41
+      },
+      "ServerDropWeight": 12
     }
   ]
 }
 ```
 
-This allows the IDE to validate references and help maintain larger multi-file config systems safely.
+The IDE interprets this as:
 
----
+- one logical config named `Items`;
+- one explicit template defining the entity shape;
+- `GameName` as the primary key;
+- a reusable enum and reusable object type;
+- validation constraints;
+- generated model metadata;
+- public export metadata that does not change normal validation or full export.
 
-### Monaco-powered editor tooling
+## Non-negotiable rules
 
-The editor is built around Monaco and provides IDE-like language features for config files:
+1. New and migrated configs should use explicit `//@config` attached to an array. The IDE retains legacy implicit discovery for root/top-level arrays, but it is path-dependent and is disabled in reusable-declaration files without explicit configs.
+2. A template is created only by explicit `//@template` on one array element.
+3. The first runtime element must never be silently converted into a template.
+4. Only one explicit template is allowed per logical config.
+5. Template-only directives belong in the explicit template, not in runtime entities.
+6. Primary keys and foreign keys must be based on actual domain identity and references, not guessed from property names alone.
+7. Existing identifiers, casing, filenames, values, comments, and folder structure should be preserved unless a migration decision explicitly changes them.
+8. `//@public` and `//@private` affect export only.
+9. Public-only export is fail-closed: unknown or unmodeled properties are not safe to expose.
+10. Large changes should be previewed and reported before destructive replacement.
 
-* diagnostics;
-* hover information;
-* completions;
-* quick fixes;
-* semantic highlighting;
-* inlay hints;
-* document symbols;
-* go-to-definition;
-* references;
-* rename/refactor support.
+## What the IDE provides
 
----
+- JSONC parsing and directive diagnostics;
+- explicit template-driven validation;
+- cross-file logical configs;
+- primary-key and foreign-key validation;
+- reusable global/local object types and enums;
+- scalar and reusable-type unions;
+- constraints such as enum, regex, clamp, array length, uniqueness, optionality, and nullability;
+- Monaco completion, hover, navigation, symbols, references, rename, and local Quick Fixes;
+- preview-first Global Fixes for multi-file refactoring;
+- JSON Schema and typed code generation;
+- project backup/restore;
+- ready-files export with project, flat, and combined structures;
+- client-safe `publicOnly` export.
 
-### Quick fixes
+## Scope and limitations
 
-The IDE can suggest and apply safe edits, such as:
-
-* add missing required property;
-* remove unsupported property;
-* convert value type;
-* add value to enum;
-* apply directive transforms;
-* fix schema-related issues.
-
----
-
-### Code generation
-
-Semantic Config IDE can generate typed code from configuration templates.
-
-Current generation targets include:
-
-* C# models;
-* TypeScript models;
-* combined export modes for configs, templates, schemas, and code.
-
-This is useful for game development and data-driven applications where config structure must stay synchronized with application code.
-
----
-
-### Visual project tree
-
-The project tree is designed for working with many config files and folders.
-
-It supports:
-
-* file and folder creation;
-* safe deletion dialogs;
-* rename;
-* drag-and-drop;
-* custom colors;
-* folder color scopes;
-* semantic badges for entities, templates, warnings, and errors.
-
----
-
-### Import / export workflow
-
-Projects can be exported and imported as structured bundles.
-
-Export modes can include:
-
-* raw config files;
-* templates;
-* generated schemas;
-* generated code;
-* combined artifacts.
-
----
-
-## Example use cases
-
-Semantic Config IDE is especially useful for:
-
-* game configuration systems;
-* RPG items, units, skills, recipes, quests, environments;
-* live-ops configuration;
-* large data-driven applications;
-* internal tools;
-* configuration-heavy products;
-* systems where JSON files need validation, references, and generated types.
-
----
-
-## Tech stack
-
-The project is built with:
-
-* Next.js;
-* React;
-* TypeScript;
-* Redux Toolkit;
-* Monaco Editor;
-* JSONC parser;
-* AJV validation;
-* IndexedDB / Dexie;
-* Docker-based deployment;
-* GitHub Actions CI/CD.
-
----
-
-## Project status
-
-The project is under active development.
-
-Current focus areas:
-
-* improving semantic validation;
-* stabilizing quick fixes;
-* improving SourceTree UX;
-* polishing generated code output;
-* expanding reusable global/local types;
-* improving tests and CI/CD.
-
----
-
-## Roadmap
-
-Planned and ongoing improvements:
-
-* better visual config graph;
-* more advanced global type support;
-* stronger rename/refactor tools;
-* richer schema/code export modes;
-* improved test coverage;
-* better UI polish for large projects;
-* local agent / external automation integration;
-* support for more config formats in the future.
-
----
-
-## Philosophy
-
-Semantic Config IDE is built around one idea:
-
-> Configuration files should remain simple text files, but the editor should understand their meaning.
-
-The project keeps JSONC readable and lightweight, while adding enough semantic structure to make large configuration systems maintainable.
-
----
-
-## License
-
-License information will be added later.
+- This repository documents config usage, not the internal React/Redux architecture of the IDE.
+- `privateOnly` export is not implemented.
+- Public export of ambiguous unions is intentionally conservative and may omit fields when a safe branch cannot be selected.
+- Raw source JSONC cannot be public-only because private values would remain in the source text.
+- A project without an explicit template can still be edited, but template-driven IR, schema, validation, and code generation are skipped for that config.
+- Documentation aliases should not be treated as permission to invent new directive spellings. Prefer canonical syntax from [DIRECTIVES.md](./DIRECTIVES.md).

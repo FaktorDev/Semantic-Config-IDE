@@ -1,108 +1,120 @@
 # Global Fixes
 
-Global Fixes are project-wide or multi-file automated actions.
+Global Fixes are preview-first operations for repeated, config-wide, project-wide, or multi-file changes.
 
-They are designed for operations that are too large or too risky for a single local Quick Fix.
+They build a plan before application. The plan can include text edits and file operations.
 
-## What Global Fixes can do
+## Implemented actions
 
-Examples:
+### Schema and constraint cleanup
 
-- add missing properties across many files;
-- remove repeated additional properties;
-- clamp all out-of-range numeric values;
-- convert numeric strings to numbers;
-- rename config keys;
-- rename config properties;
-- rename primary key properties;
-- rename primary key values and cascade references;
-- fix broken foreign keys;
-- split a config file by property;
-- extract templates to a separate file.
+| Action | Scope | Behavior |
+|---|---|---|
+| Remove all additional properties | File | Removes properties reported as unknown/additional by schema validation. Destructive. |
+| Add additional property to template as optional | File | Adds repeated unknown properties to the explicit template with `//@optional` instead of removing data. |
+| Add all missing properties with defaults | File | Inserts required properties using schema default, template value, or type fallback. |
+| Add all missing properties with null | File | Inserts missing required properties with `null`; consumer compatibility must be reviewed. |
+| Convert numeric strings to numbers | File | Converts values such as `"12"` when diagnostics establish a numeric target. |
+| Clamp all out-of-range values | File | Moves numeric values to the nearest valid schema/directive bound. |
 
-## Preview-first model
+### Files and templates
 
-Global Fixes should be previewed before they are applied.
+| Action | Scope | Behavior |
+|---|---|---|
+| Extract template to separate file | File | Creates a sibling `*.template.jsonc` config part and removes the explicit template element from the original source file. |
+| Split file by property | File | Splits runtime entities into sibling files by a selected string or string-array property; the template stays in the source file. |
 
-A preview should show:
+For string arrays, split-file logic uses the first array value as the grouping target. Review whether this matches domain semantics.
 
+### Rename and reference-safe refactoring
+
+| Action | Scope | Behavior |
+|---|---|---|
+| Rename config key | Project | Renames `@config` and updates foreign-key target declarations project-wide. |
+| Rename property in config | Logical config | Renames one property in the template and runtime entities across all physical config parts. |
+| Rename primary key property | Logical config | Renames the PK property name; PK values remain unchanged. |
+| Rename primary key value and update FK references | Project | Renames one PK value and cascades only foreign keys that reference that config. |
+
+Reference-aware rename does not replace random matching strings outside the semantic reference graph.
+
+### Broken foreign keys
+
+| Action | Behavior |
+|---|---|
+| Set broken FK values to null | Replaces unresolved FK values with null where applicable. |
+| Remove optional broken FK properties | Removes broken reference properties when the schema allows omission. |
+| Replace broken FK with closest existing PK | Uses a closest-match resolver and must be manually reviewed. |
+
+The closest-match action is heuristic. Never apply it without inspecting every replacement.
+
+### Diagnostic preview
+
+A no-op issue-summary action exists to exercise the preview workflow without changing files.
+
+## Preview contents
+
+A Global Fix preview can show:
+
+- action title and scope;
 - affected files;
-- created files;
-- deleted files;
-- text edits;
-- warnings;
-- possible conflicts.
+- created/deleted files;
+- per-file text changes;
+- warnings and conflicts;
+- destructive status;
+- estimated operation cost.
 
-## Example: rename primary key value
-
-Before:
-
-```jsonc
-//@config Items
-[
-  {
-    //@template
-    //@primary_key
-    "Id": ""
-  },
-  {
-    "Id": "wood_old"
-  }
-]
-```
-
-References:
-
-```jsonc
-//@foreign_key Items
-"RequiredItem": "wood_old"
-```
-
-Global Fix can rename:
-
-```txt
-wood_old -> wood
-```
-
-and update all foreign-key references.
-
-## Example: split file by property
-
-A file with mixed groups:
-
-```jsonc
-[
-  {
-    "Type": "Weapon",
-    "Id": "sword"
-  },
-  {
-    "Type": "Food",
-    "Id": "apple"
-  }
-]
-```
-
-Global Fix can create separate files:
-
-```txt
-weapons.jsonc
-food.jsonc
-```
+All implemented default actions require preview.
 
 ## Safety rules
 
-Global Fixes should:
+1. Read the complete preview.
+2. Review created and deleted paths.
+3. Check whether edits touch template, runtime data, or both.
+4. Verify PK/FK cascades by semantic target, not only text count.
+5. Do not accept guessed fuzzy FK replacements without domain confirmation.
+6. Re-run validation after apply.
+7. Rebuild/export and compare runtime data after structural operations.
+8. Keep a project backup before destructive operations.
 
-- never apply without a preview;
-- use deterministic file names;
-- avoid destructive edits unless explicitly confirmed;
-- keep project files valid after apply;
-- report conflicts instead of guessing;
-- keep enough metadata for undo/review workflows.
+## Multi-file atomicity caution
 
-## Difference between Global Fix and Import / Export
+A preview is not the same as a database transaction. Treat large file operations as changes that require backup and post-apply verification.
 
-Global Fix changes the current IDE project.
+Recommended sequence:
 
-Import / Export moves data into or out of the IDE.
+```text
+Export Project backup
+→ build Global Fix preview
+→ inspect every file operation
+→ apply
+→ rebuild semantic context
+→ resolve remaining diagnostics
+→ export full runtime files
+→ compare with intended result
+```
+
+## Choosing between competing fixes
+
+### Unknown property
+
+- property is invalid/stale → remove it;
+- property is legitimate and part of the model → add it to template as optional/required after review.
+
+### Missing property
+
+- template/default has a valid domain value → add with defaults;
+- null is valid and expected by consumer → add with null;
+- property should actually be optional → change the template instead of bulk-filling runtime data.
+
+### Broken FK
+
+- value is obsolete and optional → remove property;
+- null is a defined state → set null;
+- obvious typo with confirmed target → replace;
+- target entity is missing → restore/add target rather than mutating the reference.
+
+## Difference from import/export
+
+Global Fix modifies the active IDE project.
+
+Import/export moves project or runtime artifacts into/out of the IDE. Export does not replace the need for semantic refactoring, and Global Fix is not a backup mechanism.

@@ -1,0 +1,46 @@
+{
+  //@global_type FixedReward
+  "FixedRewardShape": {
+    //@enum[Fixed]
+    "Kind": "Fixed",
+    "Amount": 0
+  },
+
+  //@global_type RandomReward
+  "RandomRewardShape": {
+    //@enum[Random]
+    "Kind": "Random",
+    "Min": 0,
+    "Max": 0
+  },
+
+  //@config RewardProfiles
+  "RewardProfiles": [
+    {
+      //@template
+      //@primary_key
+      "GameName": "",
+
+      //@union[FixedReward,RandomReward]
+      "Reward": {
+        "Kind": "Fixed",
+        "Amount": 0
+      }
+    },
+    {
+      "GameName": "starter_reward",
+      "Reward": {
+        "Kind": "Fixed",
+        "Amount": 100
+      }
+    },
+    {
+      "GameName": "daily_random_reward",
+      "Reward": {
+        "Kind": "Random",
+        "Min": 10,
+        "Max": 50
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  //@config Items
+  "Items": [
+    {
+      "GameName": "iron_sword",
+      "DisplayName": "Iron Sword",
+      "Tags": ["weapon", "metal"]
+    },
+    {
+      "GameName": "apple",
+      "DisplayName": "Apple"
+    }
+  ]
+}

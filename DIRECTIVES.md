@@ -1,183 +1,221 @@
-# Semantic Config IDE Directives
+# Directive Reference
 
-Directives are JSONC comments that start with `//@`.
+Directives are JSONC line comments that begin with `//@`. They add semantic metadata without changing ordinary JSON values.
 
-They add semantic meaning to plain JSONC files without changing the runtime JSON data model.
+This reference uses canonical spellings implemented by the verified IDE snapshot.
 
-```jsonc
-//@config Items
-[
-  {
-    //@template
-    //@primary_key
-    "Id": "",
-    "Name": ""
-  },
-  {
-    "Id": "sword",
-    "Name": "Sword"
-  }
-]
-```
+## Attachment and placement
 
-## Basic syntax
+A directive applies to the next JSON node.
 
 ```jsonc
-//@directive_name
-//@directive_name value
-//@directive_name(value)
-//@directive_name[value1,value2,value3]
+//@public
+"DisplayName": ""
 ```
 
-Directives must be placed immediately before the JSON node they describe.
-
-## Core concepts
-
-### Config
-
-A config is a logical collection of entities.
-
-```jsonc
-//@config Items
-[
-  {
-    //@template
-    //@primary_key
-    "Id": "",
-    "Name": ""
-  }
-]
-```
-
-Only `//@config` creates a config.
-
-These directives do not create configs:
-
-```jsonc
-//@global_type
-//@local_type
-//@ref_type
-//@global_enum
-//@local_enum
-//@ref_enum
-```
-
-### Template
-
-A template defines the structure of runtime entities.
-
-```jsonc
-[
-  {
-    //@template
-    //@primary_key
-    "Id": "",
-    "Name": "",
-    "Weight": 1
-  },
-  {
-    "Id": "sword",
-    "Name": "Sword",
-    "Weight": 3
-  }
-]
-```
-
-The template is not runtime data. It is used for validation, schema generation, code generation, completions and quick fixes.
-
-Target Stage 7 behavior:
-
-```txt
-Only explicit //@template creates a template.
-If a config has no //@template, the first array element must not be treated as a template.
-```
-
-## Config directives
-
-### `//@config <ConfigName>`
-
-Creates or joins a logical config.
-
-```jsonc
-//@config Items
-[
-  {
-    //@template
-    //@primary_key
-    "Id": "",
-    "Name": ""
-  }
-]
-```
-
-Multiple files may contribute to the same config by using the same config name.
-
-### `//@template`
-
-Marks one array element as the template.
-
-```jsonc
-{
-  //@template
-  //@primary_key
-  "Id": "",
-  "Name": ""
-}
-```
-
-### `//@primary_key`
-
-Marks a property as the unique identifier of an entity.
-
-```jsonc
-{
-  //@template
-  //@primary_key
-  "Id": ""
-}
-```
-
-### `//@foreign_key <ConfigName>`
-
-Marks a property as a reference to another config.
-
-```jsonc
-//@config Recipes
-[
-  {
-    //@template
-    //@primary_key
-    "Id": "",
-
-    //@foreign_key Items
-    "ResultItemId": ""
-  }
-]
-```
-
-For arrays:
+Multiple directives may be stacked:
 
 ```jsonc
 //@foreign_key Items
-"RequiredItems": ["wood", "iron"]
+//@private
+//@optional
+"HiddenFallbackItem": null
 ```
 
-Each array item should reference an existing primary key in the target config.
+Keep directives immediately adjacent to their target. Prefer one directive per line.
 
-## Property validation directives
+## Scope vocabulary
+
+| Scope | Meaning |
+|---|---|
+| File/declaration | Reusable declaration or top-level semantic declaration. |
+| Config array | The array marked with `//@config`. |
+| Template element | The single array element marked `//@template`. |
+| Template property | A property inside the explicit template element. |
+| Array property | A property whose JSON value is an array. |
+| Runtime element | A non-template config entity. Template-only directives are invalid here. |
+
+## Canonical directive index
+
+| Directive | Main target | Purpose |
+|---|---|---|
+| `//@config Name` | array | Declares or joins a logical config. |
+| `//@template` | config array element | Marks the explicit source-of-truth template. |
+| `//@primary_key` | template property | Declares the config identity property. |
+| `//@foreign_key Config` | template property | Declares references to another config PK. |
+| `//@public` | template property | Includes property in public-only export. |
+| `//@private` | template property | Excludes property subtree from public-only export. |
+| `//@type Type` | template property | Overrides inferred scalar/codegen type. |
+| `//@optional` | template property | Makes property non-required; current schema also permits null. |
+| `//@nullable` | template property | Allows explicit `null`. |
+| `//@defaultValue Value` | template property | Declares default metadata for schema/codegen/fixes. |
+| `//@enum[...]` | template property | Declares inline allowed values. |
+| `//@regex Pattern` | template property | Validates strings or string-array items. |
+| `//@clamp[...]` | template property | Declares numeric bounds. |
+| `//@array_length(...)` | config/template array | Declares array length bounds. |
+| `//@uniqueBy[...]` | config/template array | Requires unique property combinations. |
+| `//@choiceBetween("id", n)` | template properties | Declares mutually exclusive property groups. |
+| `//@one_of[...]` | template property | Declares simple/scalar alternatives. |
+| `//@union[...]` | template property | Declares alternatives between reusable types. |
+| `//@global_type Name` | object declaration | Declares project-wide reusable object shape. |
+| `//@local_type Name` | object declaration | Declares local reusable object shape. |
+| `//@ref_type Name` | template property | Reuses an object type; on arrays applies to items. |
+| `//@global_enum Name` | array declaration | Declares project-wide reusable values from the attached array. |
+| `//@local_enum Name` | array declaration | Declares local reusable values from the attached array. |
+| `//@ref_enum Name` | template property | Reuses enum; on arrays applies to each item. |
+| `//@name Name` | template/property | Sets generated declaration/property naming metadata. |
+| `//@elements_name Name` | array | Sets generated array element type name. |
+| `//@items Name` | array | Legacy alias behavior for element type naming. |
+| `//@codegen Target` | template/property | Controls generated declaration shape per language. |
+| `//@desc Text` | array/template/property | Adds human-readable metadata. |
+| `//@order Number` | template property | Controls property order during sorting. |
+| `//@sort_properties` | template element | Enables template-based property sorting. |
+| `//@sort_elements [...]` | array | Defines element sort keys in priority order. |
+| `//@sort_config Property` | array | Legacy one-key form of `sort_elements`. |
+| `//@first [priority]` | array element | Pins an element before ordinary sorted elements. |
+| `//@ignore_property` | template property | Removes property from normal runtime processing/output. |
+| `//@ignore_element` | array element | Removes element from normal runtime processing/output. |
+
+## Config and template directives
+
+### `//@config <ConfigName>`
+
+Explicitly declares an array as a logical config. Arrays in multiple files using the same canonical name contribute to one config.
+
+The current IDE retains legacy implicit discovery for root and top-level arrays, but migrated configs should always use explicit `@config`. A root array without `@config` derives its key from the filename; a top-level property array derives it from the property name. Reusable declaration files suppress this implicit discovery unless they also contain explicit config declarations.
+
+```jsonc
+//@config Items
+[
+  // template and runtime entities
+]
+```
+
+or:
+
+```jsonc
+{
+  //@config Items
+  "Items": []
+}
+```
+
+Rules:
+
+- target must be an array;
+- only `@config` creates a config;
+- reusable type/enum declarations do not create configs;
+- use stable domain names such as `Items`, `Recipes`, or `CharacterTraits`;
+- do not reuse one config name for unrelated collections.
+
+### `//@template`
+
+Marks one config array element as the explicit template.
+
+```jsonc
+//@config Items
+[
+  {
+    //@template
+    "GameName": "",
+    "DisplayName": ""
+  }
+]
+```
+
+Rules:
+
+- exactly one explicit template is allowed per logical config;
+- the first array element is not implicitly a template;
+- template-driven IR/schema/validation/codegen are skipped if no explicit template exists;
+- the template is removed from cleaned runtime output unless template export is enabled.
+
+## Keys and references
+
+### `//@primary_key`
+
+Marks the stable unique identifier property.
+
+```jsonc
+//@primary_key
+"GameName": ""
+```
+
+Rules:
+
+- use on a property inside the explicit template;
+- values must be unique across all physical parts of the logical config;
+- the property is implicitly public in `publicOnly` export unless `//@private` overrides it.
+
+### `//@foreign_key <TargetConfig>`
+
+Declares references to the target config primary key.
+
+Scalar:
+
+```jsonc
+//@foreign_key Items
+"ResultItem": ""
+```
+
+Array:
+
+```jsonc
+//@foreign_key Items
+"RequiredItems": []
+```
+
+For arrays, each array item is validated. The property is implicitly public in `publicOnly` export unless overridden with `//@private`.
+
+## Export visibility
+
+### `//@public`
+
+Includes a template property in `publicOnly` export.
+
+```jsonc
+//@public
+"DisplayName": ""
+```
+
+On objects and arrays, public visibility opens the subtree except for explicitly private descendants.
+
+### `//@private`
+
+Excludes a property and its complete subtree from `publicOnly` export.
+
+```jsonc
+//@primary_key
+//@private
+"InternalId": ""
+```
+
+Precedence:
+
+```text
+@private > @public > @primary_key/@foreign_key > unmarked
+```
+
+`@public` and `@private` affect export only. They do not change normal validation, full schema/codegen, or full export.
+
+Using both on the same property is a diagnostic error. A public descendant inside a private ancestor is ineffective and diagnosed.
+
+See [PUBLIC_EXPORT.md](./PUBLIC_EXPORT.md).
+
+## Scalar and value constraints
 
 ### `//@type <type>`
 
-Forces a property type.
+Overrides inferred scalar type.
 
 ```jsonc
 //@type int
-"Level": 1
+"Level": 0
 ```
 
-Common primitive types:
+Canonical supported scalar names:
 
-```txt
+```text
 int
 long
 float
@@ -189,236 +227,361 @@ datetime
 guid
 ```
 
+The parser normalizes `boolean` to `bool`, but `bool` is preferred.
+
 ### `//@optional`
 
-Marks a property as not required.
+Marks a property as non-required.
 
 ```jsonc
 //@optional
 "Description": ""
 ```
 
+Current generated-schema behavior also permits null. Confirm consumer semantics when missing and null must be distinguished.
+
 ### `//@nullable`
 
-Allows `null`.
+Allows explicit `null`.
 
 ```jsonc
 //@nullable
 "Icon": null
 ```
 
-### `//@defaultValue <value>`
+### `//@defaultValue <JSON value>`
 
-Declares a default value.
+Defines default metadata.
 
 ```jsonc
 //@defaultValue 1
 "Weight": 1
 ```
 
+```jsonc
+//@defaultValue "unknown"
+"DisplayName": ""
+```
+
+Use canonical `@defaultValue`. Do not rely on the undocumented `@default_value` spelling.
+
 ### `//@enum[...]`
 
-Declares inline enum values.
+Declares inline allowed values.
 
 ```jsonc
-//@enum[Common,Rare,Epic,Legendary]
+//@enum[Common,Rare,Epic]
 "Rarity": "Common"
 ```
 
-### `//@clamp(min,max)`
-
-Constrains a number.
+Quoted values are supported:
 
 ```jsonc
-//@clamp(0,100)
-"Health": 100
+//@enum["Light Armor","Heavy Armor"]
+"ArmorClass": "Light Armor"
 ```
 
-### `//@regex <expression>`
-
-Validates a string with a regular expression.
+Extended mappings are supported for codegen/sort metadata:
 
 ```jsonc
-//@regex ^[a-z0-9_]+$
-"Id": "iron_sword"
+//@enum[Common=1,Rare=2,Epic=3]
+"Rarity": "Common"
 ```
 
-### `//@desc <text>`
+When attached to an array property, each string item is constrained.
 
-Adds a human-readable description.
+### `//@regex <pattern>`
+
+Validates a string or each string-array item.
 
 ```jsonc
-//@desc Item display name shown in UI.
-"Name": ""
+//@regex ^[a-z][a-z0-9_]*$
+"GameName": ""
 ```
 
-## Reusable types
+Keep patterns compatible with the JavaScript regular expression engine used by the IDE.
 
-Reusable types allow shared object shapes.
+### `//@clamp<range>`
+
+Declares numeric bounds.
+
+```jsonc
+//@clamp[0,100]
+"HealthPercent": 100
+```
+
+Bound syntax:
+
+- `[` / `]` includes the bound;
+- `(` / `)` excludes the bound;
+- either side may be omitted.
+
+Examples:
+
+```jsonc
+//@clamp[0,100]
+//@clamp[,3)
+//@clamp(0,]
+```
+
+### `//@array_length(...)`
+
+Restricts array length.
+
+```jsonc
+//@array_length(1,3)
+"Rewards": []
+```
+
+Supported forms:
+
+```text
+@array_length(,3)   maximum 3
+@array_length(1,)   minimum 1
+@array_length(1,3)  between 1 and 3
+@array_length(3)    exactly 3
+```
+
+### `//@uniqueBy[...]`
+
+Requires config/array objects to be unique by one or more properties.
+
+```jsonc
+//@uniqueBy[GameName]
+//@config Items
+[
+  // ...
+]
+```
+
+Composite uniqueness:
+
+```jsonc
+//@uniqueBy[CharacterId,SkillId]
+```
+
+Multiple `uniqueBy` rules may be used when they express distinct uniqueness constraints.
+
+### `//@choiceBetween("chooserId", groupId)`
+
+Declares mutually exclusive property groups.
+
+```jsonc
+//@choiceBetween("cost", 1)
+"FixedCost": 0,
+
+//@choiceBetween("cost", 2)
+"PercentCost": 0
+```
+
+Properties sharing the same chooser id participate in the same choice set. Use stable chooser ids and explicit numeric group ids.
+
+## Reusable types and enums
 
 ### `//@global_type <TypeName>`
 
-Declares a type available across the project.
+Declares a project-wide reusable object shape. Attach it to an object-valued property in a valid JSON document.
 
 ```jsonc
-//@global_type Price
 {
-  "Amount": 0,
-  "Currency": "gold"
+  //@global_type Price
+  "PriceShape": {
+    "Amount": 0,
+    "Currency": "gold"
+  }
 }
 ```
 
 ### `//@local_type <TypeName>`
 
-Declares a type available only within the current config or file scope.
+Declares a reusable object shape limited to local file/config scope.
 
 ```jsonc
-//@local_type DropRange
 {
-  "Min": 0,
-  "Max": 1
+  //@local_type DropRange
+  "DropRangeShape": {
+    "Min": 0,
+    "Max": 1
+  }
 }
 ```
 
 ### `//@ref_type <TypeName>`
 
-References a reusable type.
-
-Scalar object usage:
+References a reusable object type.
 
 ```jsonc
-//@global_type Price
-{
+//@ref_type Price
+"Price": {
   "Amount": 0,
   "Currency": "gold"
 }
-
-//@config Items
-[
-  {
-    //@template
-    //@primary_key
-    "Id": "",
-
-    //@ref_type Price
-    "Price": {
-      "Amount": 10,
-      "Currency": "gold"
-    }
-  }
-]
 ```
 
-Array usage:
+On an array property, the referenced type applies to each item:
 
 ```jsonc
-//@global_type Modifier
-{
-  "Type": "",
-  "Value": 0
-}
-
 //@ref_type Modifier
-"Modifiers": [
-  {
-    "Type": "tax",
-    "Value": 0.2
-  }
-]
+"Modifiers": []
 ```
 
-Target Stage 7 behavior:
+### `//@global_enum <EnumName>`
 
-```txt
-If //@ref_type is placed on an array property, the referenced type applies to array items.
-```
-
-## Reusable enums
-
-Reusable enums allow shared value sets.
-
-### `//@global_enum <EnumName> [A,B,C]`
-
-Declares an enum available across the project.
+Declares a project-wide enum. Values come from the attached JSON array.
 
 ```jsonc
-//@global_enum Rarity [Common,Rare,Epic,Legendary]
+{
+  //@global_enum Rarity
+  "RarityValues": ["Common", "Rare", "Epic"]
+}
 ```
 
-### `//@local_enum <EnumName> [A,B,C]`
+### `//@local_enum <EnumName>`
 
-Declares an enum available only within the current config or file scope.
+Declares a local enum. Values come from the attached JSON array.
 
 ```jsonc
-//@local_enum DamageType [Physical,Fire,Ice,Poison]
+{
+  //@local_enum DamageType
+  "DamageTypeValues": ["Physical", "Fire", "Ice"]
+}
 ```
 
 ### `//@ref_enum <EnumName>`
 
 References a reusable enum.
 
-Scalar usage:
-
 ```jsonc
-//@global_enum Rarity [Common,Rare,Epic,Legendary]
-
 //@ref_enum Rarity
 "Rarity": "Common"
 ```
 
-Array usage:
+On arrays, every item must be a member:
 
 ```jsonc
-//@global_enum Tag [Weapon,Material,Food]
-
 //@ref_enum Tag
-"Tags": ["Weapon", "Material"]
+"Tags": []
 ```
 
-Target Stage 7 behavior:
+## Union directives
 
-```txt
-If //@ref_enum is placed on an array property, every array item must be a string from the referenced enum.
+### `//@one_of[...]`
+
+Allows one of several simple types.
+
+```jsonc
+//@one_of[string,number,bool]
+"Value": ""
 ```
 
-## Union
+Use canonical `one_of`. The parser also recognizes `oneOf`.
 
 ### `//@union[...]`
 
-Allows a property to match one of several alternatives.
-
-```jsonc
-//@union[string,int]
-"Value": "10"
-```
-
-For reusable types:
+Allows one of several named reusable object types.
 
 ```jsonc
 //@union[FlatPrice,PercentPrice]
-"PriceRule": {
-  "Amount": 10
+"PriceRule": {}
+```
+
+Each listed name must resolve to a reusable type.
+
+## Generated naming and documentation
+
+### `//@name <Name>`
+
+Sets an explicit generated name on a template or property.
+
+```jsonc
+//@name ItemConfig
+```
+
+Use this instead of renaming runtime JSON keys solely for generated-code style.
+
+### `//@elements_name <Name>`
+
+Sets the generated type name for array elements.
+
+```jsonc
+//@elements_name ResourceCost
+"Costs": []
+```
+
+The parser also recognizes `elementsName`. Canonical `elements_name` is preferred.
+
+### `//@items <Name>`
+
+Legacy element naming directive. Prefer `//@elements_name` in new configs.
+
+### `//@desc <text>`
+
+Adds descriptive metadata used by hover, schema, and code generation.
+
+```jsonc
+//@desc Localized name displayed to the player.
+"DisplayName": ""
+```
+
+### `//@codegen <target>`
+
+Controls generated declaration shape without changing runtime data type.
+
+Supported catalog values include:
+
+```text
+csharp:record
+csharp:class
+csharp:struct
+typescript:interface
+typescript:type
+unity:serializable_class
+unity:serializable_struct
+```
+
+Example:
+
+```jsonc
+//@template
+//@codegen csharp:record
+//@codegen typescript:interface
+//@name ItemConfig
+{
+  "GameName": ""
 }
 ```
 
-## Sorting directives
+Multiple language-specific `@codegen` directives may coexist when they target different generation strategies.
 
-### `//@sort_elements [...]`
+## Sorting and formatting
 
-Sorts array elements by one or more keys.
+Sorting directives define IDE formatting behavior. They do not change domain meaning.
+
+### `//@sort_elements ["A","B"]`
+
+Sorts array elements by property/dotted-path priority.
 
 ```jsonc
-//@config Environments
-//@sort_elements ["GameName"]
+//@sort_elements ["Category", "Level", "GameName"]
+//@config Items
 [
-  { "GameName": "forest" },
-  { "GameName": "desert" }
+  // ...
 ]
 ```
 
-### `//@first`
+### `//@sort_config <Property>`
 
-Pins an element before regular sorted elements.
+Legacy one-property form that maps to `sort_elements`.
+
+```jsonc
+//@sort_config GameName
+```
+
+Prefer `sort_elements` for new configs.
+
+### `//@first [priority]`
+
+Pins an array element before ordinary sorted elements.
 
 ```jsonc
 //@first
@@ -427,65 +590,137 @@ Pins an element before regular sorted elements.
 }
 ```
 
+An optional numeric priority is parsed for ordering multiple first elements:
+
+```jsonc
+//@first -10
+```
+
+The explicit template remains ahead of runtime `@first` elements during template-aware sorting.
+
+### `//@sort_properties`
+
+Enables object property sorting according to template and directive rules.
+
+```jsonc
+{
+  //@template
+  //@sort_properties
+
+  //@order 0
+  "GameName": "",
+
+  "DisplayName": "",
+
+  //@order -1
+  "Notes": ""
+}
+```
+
+### `//@order <number>`
+
+Controls property placement:
+
+- non-negative values form the front group, ascending;
+- negative values form the tail group, ascending;
+- `-1` is closest to the end;
+- template order is the stable fallback for known properties.
+
 ## Ignore directives
+
+### `//@ignore_property`
+
+Excludes a template property from normal runtime schema/codegen properties and cleaned runtime export.
+
+```jsonc
+//@ignore_property
+"DesignerNote": ""
+```
+
+Use this for authoring-only properties that should not exist in normal runtime output.
+
+Do not confuse it with `@private`, which remains present in full export.
 
 ### `//@ignore_element`
 
-Excludes an array element from generated/runtime output.
+Excludes an array element from normal runtime processing/output.
 
 ```jsonc
 //@ignore_element
 {
-  "Id": "debug_only"
+  "GameName": "debug_example"
 }
 ```
 
-### `//@ignore_property`
+Useful for examples or disabled authoring records that should remain visible in source.
 
-Excludes a property from generated/runtime output.
+## Parser aliases and canonical policy
+
+The current parser recognizes these compatibility aliases:
+
+| Canonical | Recognized alias |
+|---|---|
+| `one_of` | `oneOf` |
+| `elements_name` | `elementsName` |
+| `array_length` | `arrayLength`, misspelled legacy `array_lenght` |
+| `uniqueBy` | `unique_by` |
+| `choiceBetween` | `choice_between` |
+| `sort_elements` | legacy `sort_config` for one key |
+| `type bool` | accepts `boolean`, normalizes to `bool` |
+
+Use canonical forms in migrated files. Avoid relying on catalog-only or undocumented spellings such as `@default_value`.
+
+## Placement errors to avoid
+
+### Template-only directive on runtime data
+
+Incorrect:
 
 ```jsonc
-//@ignore_property
-"DebugNote": "Only for designers"
-```
-
-## Recommended config structure
-
-```jsonc
-//@global_enum Rarity [Common,Rare,Epic]
-
-//@global_type Price
 {
-  "Amount": 0,
-  "Currency": "gold"
+  "GameName": "iron_sword",
+  //@primary_key
+  "Id": "item_1"
 }
+```
 
-//@config Items
+Correct: move the directive to the matching property in the explicit template.
+
+### Property directive on the template element itself
+
+Incorrect:
+
+```jsonc
+//@public
+{
+  //@template
+  "DisplayName": ""
+}
+```
+
+Correct:
+
+```jsonc
+{
+  //@template
+  //@public
+  "DisplayName": ""
+}
+```
+
+### Multiple templates
+
+Incorrect:
+
+```jsonc
 [
-  {
-    //@template
-    //@primary_key
-    "Id": "",
-
-    "Name": "",
-
-    //@ref_enum Rarity
-    "Rarity": "Common",
-
-    //@ref_type Price
-    "Price": {
-      "Amount": 1,
-      "Currency": "gold"
-    }
+  { //@template
+    "Id": ""
   },
-  {
-    "Id": "sword",
-    "Name": "Sword",
-    "Rarity": "Common",
-    "Price": {
-      "Amount": 10,
-      "Currency": "gold"
-    }
+  { //@template
+    "Id": ""
   }
 ]
 ```
+
+Only one template is allowed per logical config.

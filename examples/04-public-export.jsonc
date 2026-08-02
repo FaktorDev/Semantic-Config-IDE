@@ -1,0 +1,43 @@
+{
+  //@config Items
+  "Items": [
+    {
+      //@template
+
+      //@primary_key
+      "GameName": "",
+
+      //@public
+      "DisplayName": "",
+
+      "ServerDropWeight": 0,
+
+      //@public
+      "Visual": {
+        "Icon": "",
+
+        //@private
+        "InternalAtlasId": 0
+      },
+
+      //@private
+      "ServerFormula": {
+        "Expression": "",
+        "Revision": 0
+      }
+    },
+    {
+      "GameName": "iron_sword",
+      "DisplayName": "Iron Sword",
+      "ServerDropWeight": 12,
+      "Visual": {
+        "Icon": "items/iron_sword.png",
+        "InternalAtlasId": 41
+      },
+      "ServerFormula": {
+        "Expression": "base * rarity",
+        "Revision": 3
+      }
+    }
+  ]
+}

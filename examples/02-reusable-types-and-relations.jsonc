@@ -1,0 +1,81 @@
+{
+  //@global_enum Rarity
+  "RarityValues": ["Common", "Rare", "Epic"],
+
+  //@global_type Price
+  "PriceShape": {
+    //@clamp[0,]
+    "Amount": 0,
+
+    //@enum[gold,silver]
+    "Currency": "gold"
+  },
+
+  //@global_type ItemVisual
+  "ItemVisualShape": {
+    //@public
+    "Icon": "",
+
+    "InternalAtlasId": 0
+  },
+
+  //@config Resources
+  "Resources": [
+    {
+      //@template
+      //@primary_key
+      "GameName": "",
+
+      //@public
+      "DisplayName": ""
+    },
+    {
+      "GameName": "iron_ingot",
+      "DisplayName": "Iron Ingot"
+    }
+  ],
+
+  //@config Items
+  "Items": [
+    {
+      //@template
+      //@primary_key
+      "GameName": "",
+
+      //@public
+      "DisplayName": "",
+
+      //@ref_enum Rarity
+      "Rarity": "Common",
+
+      //@ref_type Price
+      "BuyPrice": {
+        "Amount": 0,
+        "Currency": "gold"
+      },
+
+      //@ref_type ItemVisual
+      "Visual": {
+        "Icon": "",
+        "InternalAtlasId": 0
+      },
+
+      //@foreign_key Resources
+      "CraftResourceIds": []
+    },
+    {
+      "GameName": "iron_sword",
+      "DisplayName": "Iron Sword",
+      "Rarity": "Common",
+      "BuyPrice": {
+        "Amount": 25,
+        "Currency": "gold"
+      },
+      "Visual": {
+        "Icon": "items/iron_sword.png",
+        "InternalAtlasId": 41
+      },
+      "CraftResourceIds": ["iron_ingot"]
+    }
+  ]
+}

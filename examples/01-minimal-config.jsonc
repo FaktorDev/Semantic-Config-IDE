@@ -1,0 +1,47 @@
+{
+  //@config Items
+  //@sort_elements ["Category", "GameName"]
+  "Items": [
+    {
+      //@template
+      //@name ItemConfig
+      //@codegen csharp:record
+      //@codegen typescript:interface
+      //@sort_properties
+
+      //@order 0
+      //@primary_key
+      //@regex ^[a-z][a-z0-9_]*$
+      "GameName": "",
+
+      //@public
+      //@desc Name displayed to the player.
+      "DisplayName": "",
+
+      //@enum[Weapon,Material,Food]
+      "Category": "Material",
+
+      //@clamp[1,999]
+      //@defaultValue 1
+      "MaxStack": 1,
+
+      //@optional
+      //@nullable
+      "Icon": null
+    },
+    {
+      "GameName": "iron_sword",
+      "DisplayName": "Iron Sword",
+      "Category": "Weapon",
+      "MaxStack": 1,
+      "Icon": "items/iron_sword.png"
+    },
+    {
+      "GameName": "wood",
+      "DisplayName": "Wood",
+      "Category": "Material",
+      "MaxStack": 250,
+      "Icon": null
+    }
+  ]
+}

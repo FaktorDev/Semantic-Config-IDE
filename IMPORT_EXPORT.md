@@ -1,145 +1,223 @@
-# Import / Export
+# Import and Export
 
-Semantic Config IDE separates two different workflows:
+Semantic Config IDE separates authoring-project backup from production-ready file export.
 
-1. Project Backup / Restore.
-2. Ready Files Export / Import.
+## 1. Project Backup / Restore
 
-They should not be confused.
+Project backup preserves IDE project state in a special JSON bundle.
 
-## Project Backup / Restore
+Default filename pattern:
 
-Project export is for moving or backing up the full IDE project.
-
-It includes IDE-specific information such as:
-
-- project metadata;
-- files;
-- folders;
-- tree structure;
-- colors;
-- settings;
-- layout/session data if supported.
-
-### Export Project
-
-Creates one special JSON file:
-
-```txt
+```text
 <project-name>.semantic-config-project.json
 ```
 
-Use this when you want to:
+Use it to:
 
 - back up an IDE project;
-- move a project to another browser/device;
-- preserve IDE metadata;
-- restore project structure later.
+- move it between browsers/devices;
+- preserve IDE metadata and project structure;
+- restore files as an IDE project.
 
-### Import Project
+This is not the same as ready-files export and should not be consumed by the game/application runtime.
 
-Imports one special project JSON file.
+## 2. Raw Files Import
 
-This is not the same as importing raw `.json` files.
+Raw import accepts a ZIP archive containing `.json` and `.jsonc` files and creates editable IDE project files.
 
-The importer should validate that the file is a Semantic Config IDE project bundle before restoring it.
+The importer can preserve archive paths under an optional target root.
 
-## Ready Files Export
+### Conflict strategies
 
-Ready files are production-oriented files intended for use in a game/application.
+| Strategy | Behavior |
+|---|---|
+| `Skip existing` | Existing project files are kept; conflicting imports are skipped. |
+| `Rename imported` | Imported paths are renamed deterministically to avoid collisions. |
+| `Overwrite existing` | Existing files are replaced after explicit confirmation. |
 
-They should not contain IDE-only project metadata.
+### Import diagnostics
 
-### Export Files: Project Structure
+The import plan can report:
 
-Keeps the project folder structure.
+- existing-file conflicts;
+- invalid paths;
+- unsupported extensions;
+- invalid JSONC;
+- empty files;
+- duplicate import paths;
+- archive read failures.
 
-Example output:
+Review the plan before applying overwrite operations.
 
-```txt
+### Recommended adoption workflow
+
+1. create/select an empty IDE project;
+2. import the raw ZIP using `Rename imported` or `Skip existing` for the first inspection;
+3. inspect parse diagnostics;
+4. add config/template semantics through a controlled migration;
+5. only use overwrite after the target structure is verified.
+
+## 3. Ready Files Export
+
+Ready-files export creates runtime/application artifacts without IDE project metadata.
+
+### Export modes
+
+| Mode | Purpose |
+|---|---|
+| `Raw project files` | Original source JSONC, including comments/directives when preservation options allow it. Full visibility only. |
+| `Cleaned runtime JSON` | Parsed JSON output with authoring-only elements removed according to options. Recommended runtime mode. |
+| `Selected configs` | Exports only selected logical configs/files according to the export plan. |
+
+### Structure modes
+
+#### Keep project structure
+
+Preserves relative folders:
+
+```text
 configs/items.json
-configs/units.json
 configs/recipes.json
+configs/units.json
 ```
 
-### Export Files: Flat Folder
+Use when runtime loaders depend on project paths.
 
-Exports all ready files into one folder.
+#### Flat folder
 
-Example output:
+Writes ready files into one folder. Name collisions are resolved deterministically and reported.
 
-```txt
-items.json
-units.json
-recipes.json
-```
+Use only when path-based identity is not required.
 
-If two files have the same name, the exporter should resolve the collision deterministically.
+#### Single combined files
 
-### Export Files: Single Combined Files
+Creates a small set of combined artifacts, commonly:
 
-Creates a small set of combined files.
-
-Example output:
-
-```txt
+```text
 all-configs.json
 all-templates.json
 all-schemas.json
-generated-code.cs
-generated-code.ts
+generated-code.<language extension>
 ```
 
-`all-configs.json` should be a valid JSON object.
+Combined configs are ordinary JSON data organized by config key, not an IDE project-backup wrapper.
 
-Example:
+## 4. Visibility modes
 
-```json
-{
-  "Items": [],
-  "Units": [],
-  "Recipes": []
-}
+### Full — public + private
+
+Exports all runtime properties. `@public` and `@private` do not filter full output.
+
+### Public only
+
+Exports only effective public properties:
+
+- explicit `@public`;
+- PK/FK unless overridden by `@private`;
+- structural parent containers required by public descendants.
+
+Unmarked properties are private.
+
+Public-only mode forces clean generated output:
+
+- raw source mode is disabled/normalized;
+- comments are not preserved;
+- directives are not preserved;
+- runtime JSON, templates, schemas, and generated code are projected.
+
+See [PUBLIC_EXPORT.md](./PUBLIC_EXPORT.md).
+
+## 5. Artifact options
+
+Depending on structure and mode, export can include:
+
+- runtime config JSON;
+- template files;
+- JSON Schemas;
+- generated code;
+- manifests;
+- selected files/configs;
+- an optional archive root folder;
+- configurable combined artifact names;
+- JSON indentation from 0 to 8 spaces.
+
+Do not include full schemas or full generated code in a public client package. Public-only mode must project them.
+
+## 6. Templates and ignored data
+
+Cleaned runtime export normally removes:
+
+- explicit template elements;
+- `@ignore_element` records;
+- `@ignore_property` properties;
+- comments/directives when not preserved.
+
+`@private` is different:
+
+- retained in full cleaned export;
+- removed only in public-only export.
+
+## 7. Export warnings
+
+Important warnings/errors include:
+
+- selected config has no files;
+- selected config set is empty;
+- selected file contains other configs;
+- invalid/non-JSON file skipped;
+- schema/codegen missing or failed;
+- output path collision resolved;
+- template export empty/failed;
+- public export missing IR;
+- public config skipped;
+- no public properties;
+- hidden PK/FK;
+- raw mode normalized for public export;
+- unfiltered artifact blocked.
+
+Treat public-export errors as security-relevant. Do not distribute an archive with unexplained public-export errors.
+
+## 8. Recommended export profiles
+
+### Server runtime
+
+```text
+Mode: Cleaned runtime JSON
+Structure: Keep project structure (or consumer-required structure)
+Visibility: Full
+Preserve comments: No
+Preserve directives: No
+Templates: No, unless server tooling needs them
+Schema/code: optional build artifacts
 ```
 
-It must not be a custom metadata wrapper.
+### Client runtime
 
-## Raw Files Import
-
-Raw file import is for users who already have `.json` or `.jsonc` config files and want to start using the IDE.
-
-### Import From Raw Files Archive
-
-Input:
-
-```txt
-.zip archive with .json/.jsonc files
+```text
+Mode: Cleaned runtime JSON
+Structure: consumer-required structure
+Visibility: Public only
+Preserve comments: No
+Preserve directives: No
+Templates/schema/code: only public-projected artifacts when needed
 ```
 
-Expected behavior:
+### IDE source handoff
 
-- read all supported files;
-- preserve folder structure when possible;
-- ignore unsupported files or report warnings;
-- create editable IDE project files;
-- do not require project bundle metadata.
-
-## Recommended workflow
-
-For IDE backup:
-
-```txt
-Export Project -> Import Project
+```text
+Use Project Backup / Restore
+or provide the original JSONC source archive
 ```
 
-For game/application usage:
+Do not use cleaned runtime export as the only source backup because it may omit templates, comments, directives, and ignored authoring data.
 
-```txt
-Export Ready Files
-```
+## 9. Migration verification
 
-For adopting existing configs:
+After adapting existing configs:
 
-```txt
-Import From Raw Files Archive
-```
+1. export `Full` cleaned runtime JSON;
+2. compare it semantically to the original runtime data;
+3. export `Public only` when applicable;
+4. search the entire archive for private sentinel names/values;
+5. inspect warnings and artifact counts;
+6. test the real runtime consumer with the exported files.

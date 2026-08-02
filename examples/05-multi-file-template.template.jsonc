@@ -1,0 +1,14 @@
+{
+  //@config Items
+  "Items": [
+    {
+      //@template
+      //@primary_key
+      "GameName": "",
+      "DisplayName": "",
+
+      //@optional
+      "Tags": []
+    }
+  ]
+}
