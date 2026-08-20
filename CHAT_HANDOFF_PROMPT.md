@@ -3,7 +3,7 @@
 Upload this documentation archive and the project config archive, then send the following prompt.
 
 ```text
-Analyze the uploaded Semantic Config IDE documentation first. Treat START_HERE_FOR_AI.md as the primary workflow contract, DIRECTIVES.md as the canonical directive reference, and PUBLIC_EXPORT.md as the client/server visibility contract.
+Analyze the uploaded Semantic Config IDE documentation first. Treat START_HERE_FOR_AI.md as the primary workflow contract, DIRECTIVES.md as the canonical directive reference, PUBLIC_EXPORT.md as the client/server visibility contract, and PROJECT_EVOLUTION.md as the Project Group/version/release contract when version history is involved.
 
 Then analyze the uploaded project configs and adapt them to Semantic Config IDE.
 
@@ -22,6 +22,7 @@ Requirements:
 - produce files at their real target paths in a ready replacement archive;
 - include MIGRATION_REPORT.md based on MIGRATION_REPORT_TEMPLATE.md;
 - validate JSONC, templates, PK uniqueness, FK resolution, full export compatibility, and public sentinel absence;
+- if the target Project is Released/Archived, do not mutate it in place; work from a new Draft;
 - finish with an analysis of completed work, possible errors, unresolved questions, and next steps.
 
 Before modifying files, build a source inventory and config-mapping table. When information is genuinely missing, make the safest compatibility-preserving choice and list the unresolved issue rather than inventing semantics.

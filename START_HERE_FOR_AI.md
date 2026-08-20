@@ -10,7 +10,8 @@ Use all available inputs:
 2. the source config archive;
 3. application code that reads the configs, when available;
 4. generated models or schemas, when available;
-5. the user's explicit decisions about compatibility, public/client data, and desired output layout.
+5. the user's explicit decisions about compatibility, public/client data, and desired output layout;
+6. Project/version context when the source is part of a Project Group or release history.
 
 Do not infer domain semantics from filenames alone when code, schemas, or references can resolve them.
 
@@ -45,6 +46,12 @@ Never invent:
 - public visibility because a field looks harmless.
 
 Record unresolved decisions instead.
+
+### Work in a Draft, not a sealed release
+
+When the Project is part of the `0.1.2` version lifecycle, perform migration/refactoring in a `Draft`. `Released` and `Archived` versions are historical snapshots and should remain sealed.
+
+If changes are required after release, create the next Draft from the release and modify that Draft. See [PROJECT_EVOLUTION.md](./PROJECT_EVOLUTION.md).
 
 ### Preserve compatibility by default
 
@@ -229,7 +236,7 @@ For a client/server split:
 - leave server-only unmarked fields private by default;
 - verify templates, schemas, and generated code as well as runtime JSON.
 
-See [PUBLIC_EXPORT.md](./PUBLIC_EXPORT.md).
+See [PUBLIC_EXPORT.md](./PUBLIC_EXPORT.md). For version-family/release workflows, also see [PROJECT_EVOLUTION.md](./PROJECT_EVOLUTION.md).
 
 ### 10. Validate before packaging
 

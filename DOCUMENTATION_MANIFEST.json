@@ -1,10 +1,11 @@
 {
   "name": "Semantic Config IDE documentation contract",
-  "documentationVersion": "2026-08-02",
+  "documentationVersion": "2026-08-21",
   "verifiedImplementation": {
     "package": "ide-frontend",
-    "version": "0.1.1",
-    "verifiedDate": "2026-08-02"
+    "version": "0.1.2",
+    "releaseDate": "2026-08-20",
+    "verifiedDate": "2026-08-21"
   },
   "primaryAiEntry": "START_HERE_FOR_AI.md",
   "readingOrder": [
@@ -14,7 +15,9 @@
     "DIRECTIVES.md",
     "PUBLIC_EXPORT.md",
     "IMPORT_EXPORT.md",
+    "PROJECT_EVOLUTION.md",
     "EXAMPLES.md",
+    "CHANGELOG.md",
     "MIGRATION_REPORT_TEMPLATE.md"
   ],
   "canonicalMigrationRules": [
@@ -75,15 +78,55 @@
     "ignore_element"
   ],
   "recognizedCompatibilityAliases": {
-    "one_of": ["oneOf"],
-    "elements_name": ["elementsName"],
-    "array_length": ["arrayLength", "array_lenght"],
-    "uniqueBy": ["unique_by"],
-    "choiceBetween": ["choice_between"],
-    "type bool": ["type boolean"],
-    "sort_elements": ["sort_config for one key"]
+    "one_of": [
+      "oneOf"
+    ],
+    "elements_name": [
+      "elementsName"
+    ],
+    "array_length": [
+      "arrayLength",
+      "array_lenght"
+    ],
+    "uniqueBy": [
+      "unique_by"
+    ],
+    "choiceBetween": [
+      "choice_between"
+    ],
+    "type bool": [
+      "type boolean"
+    ],
+    "sort_elements": [
+      "sort_config for one key"
+    ]
   },
   "examplesDirectory": "examples",
   "reportTemplate": "MIGRATION_REPORT_TEMPLATE.md",
-  "chatHandoffPrompt": "CHAT_HANDOFF_PROMPT.md"
+  "chatHandoffPrompt": "CHAT_HANDOFF_PROMPT.md",
+  "productChangelog": "CHANGELOG.md",
+  "projectEvolutionGuide": "PROJECT_EVOLUTION.md",
+  "projectEvolutionCapabilities": [
+    "projectGroups",
+    "orderedProjectVersions",
+    "fileDiff",
+    "configSemanticDiff",
+    "primaryKeyEntityDiff",
+    "propertyDiff",
+    "standaloneProjectAnalytics",
+    "projectGroupAnalytics",
+    "activityCalendar",
+    "draftReleasedArchivedLifecycle",
+    "immutableReleaseSnapshots",
+    "releaseSha256"
+  ],
+  "supportedProjectFileKinds": {
+    "semantic": [
+      "json",
+      "jsonc"
+    ],
+    "nonSemanticSupporting": [
+      "md"
+    ]
+  }
 }

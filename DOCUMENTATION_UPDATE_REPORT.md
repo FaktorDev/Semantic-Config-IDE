@@ -2,50 +2,66 @@
 
 ## Scope
 
-The original documentation-only repository contained:
+This refresh updates the documentation repository to the `ide-frontend` `0.1.2` release scope and makes the product changelog visible as part of the primary documentation navigation.
 
-- `README.md`;
-- `DIRECTIVES.md`;
-- `IMPORT_EXPORT.md`;
-- `QUICK_FIXES.md`;
-- `GLOBAL_FIXES.md`.
+The repository now documents both:
 
-It was updated against the supplied `ide-frontend` version `0.1.1` source snapshot.
+- the semantic-config authoring contract; and
+- the user-visible Project Evolution workflows introduced across the current IDE.
 
-## Main corrections
+## Main corrections and additions
 
-- removed future-stage wording and separated implemented behavior from limitations;
-- corrected the config discovery model: legacy implicit root/top-level array discovery still exists, while explicit `@config` is now the documented migration standard;
-- confirmed explicit-template-only semantic processing;
-- corrected reusable type/enum declaration examples to valid single-root JSONC;
-- documented parser-supported canonical directives and aliases;
-- documented `@public`/`@private`, implicit PK/FK visibility, nested precedence, artifact projection, and fail-closed behavior;
-- updated import/export modes and structure names to current UI contracts;
-- replaced generic Quick Fix/Global Fix descriptions with implemented action families;
-- added AI migration instructions, workflow, examples, report template, manifest, and chat handoff prompt.
+- updated the documented application version from `0.1.1` to `0.1.2`;
+- added `CHANGELOG.md` with the current product release notes and linked it prominently from `README.md`;
+- added `PROJECT_EVOLUTION.md` for Project Groups, version comparison, semantic history, Activity, and release lifecycle;
+- documented standalone Project Analyze and Project Group Analyze;
+- documented config-level, PK entity-level, and on-demand property-level semantic change analysis;
+- documented local Activity heatmaps and tracking-start limitations;
+- documented `Draft`, `Released`, and `Archived` semantics plus immutable release snapshots/SHA-256 identity;
+- updated Import/Export with direct Project transfer, deterministic Ready Files manifests, progress-aware exports, cancellation, and ZIP compression presets;
+- documented Markdown/non-config Project files as non-semantic content;
+- updated AI migration/handoff guidance so sealed releases are not modified in place;
+- updated the machine-readable manifest and reading order.
+
+## Existing config-contract corrections retained
+
+The earlier `0.1.1` documentation rewrite remains authoritative for:
+
+- explicit `@config` as the migration standard while legacy implicit discovery exists;
+- explicit-template-only semantic processing;
+- reusable type/enum declaration patterns;
+- canonical directive names and compatibility aliases;
+- `@public` / `@private` fail-closed export semantics;
+- Quick Fix and Global Fix behavior;
+- migration/report templates and JSONC examples.
 
 ## Validation performed
 
-- all documentation-local links resolve;
+- all documentation-local Markdown links resolve;
 - all Markdown code fences are balanced;
 - `DOCUMENTATION_MANIFEST.json` parses as JSON;
-- all six `.jsonc` example files parse after JSONC comment removal;
-- no unfinished draft markers remain;
-- obsolete roadmap wording remains only in the changelog as a record of what was removed.
+- all example `.jsonc` files still parse after JSONC comment removal;
+- `CHANGELOG.md` is linked from the primary README;
+- `PROJECT_EVOLUTION.md` is linked from README, Import/Export, START_HERE, and the AI handoff prompt;
+- documentation version markers no longer claim the old `0.1.1` baseline as current;
+- no unfinished draft markers remain.
 
 ## Known documentation risks
 
-1. The IDE can evolve after the verified snapshot. Future implementation changes should update the manifest date/version and re-audit directive/export behavior.
-2. Some compatibility aliases are accepted by the parser but should remain migration-only legacy knowledge; canonical forms are preferred.
-3. Documentation cannot determine project-specific PK/FK, enum, range, optionality, or visibility decisions without analyzing the target project and its consumers.
-4. Browser UI labels and exact warning wording may change while core contracts remain stable.
-5. The documentation does not replace runtime integration tests with exported files.
+1. Exact UI labels can evolve faster than semantic contracts. When UI wording changes, keep the workflow description accurate even if a button label changes.
+2. Activity is local browser history; documentation must not imply cross-device synchronization.
+3. Release snapshots consume local IndexedDB storage; exact storage size depends on Project size and number of releases.
+4. Property-level semantic diff intentionally treats arrays atomically when safe element identity is unavailable.
+5. The documentation repository does not replace real runtime integration tests with Full/Public Ready Files.
+6. Future IDE releases should update both `CHANGELOG.md` and `DOCUMENTATION_MANIFEST.json`.
 
 ## Recommended maintenance
 
-- update `DOCUMENTATION_MANIFEST.json` whenever directive or export contracts change;
-- add a regression example for every new directive;
-- keep `START_HERE_FOR_AI.md` concise enough to remain the primary entry point;
+- update `CHANGELOG.md` for every public IDE release;
+- update the manifest version/date whenever release behavior changes;
+- add a documentation regression example for each new directive;
+- keep `START_HERE_FOR_AI.md` concise enough to remain the primary AI entry point;
 - validate examples in CI using the same JSONC parser as the IDE;
-- periodically compare `DIRECTIVES.md` with the source directive catalog and parser switch;
-- periodically compare `GLOBAL_FIXES.md` with the registered action list.
+- periodically compare `DIRECTIVES.md` with the source directive catalog/parser;
+- periodically compare `GLOBAL_FIXES.md` and `QUICK_FIXES.md` with registered actions;
+- keep `PROJECT_EVOLUTION.md` synchronized with lifecycle and Analyze behavior.

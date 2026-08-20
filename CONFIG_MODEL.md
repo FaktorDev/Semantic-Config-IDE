@@ -18,6 +18,12 @@ A single file may contain:
 - reusable enum declarations;
 - non-config supporting data.
 
+### Non-config project files
+
+Projects may also contain supporting files such as Markdown documentation. These files are editable project content but are not treated as JSONC semantic configs.
+
+Semantic config discovery, directives, IR, schema generation, and config validation apply only to supported JSON/JSONC source files. Non-config files remain opaque to the config pipeline so a documentation file cannot accidentally create config diagnostics.
+
 ## JSON node attachment
 
 A directive is a line comment beginning with `//@` and is attached to the next JSON node.
