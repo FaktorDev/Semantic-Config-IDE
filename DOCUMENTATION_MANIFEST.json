@@ -1,0 +1,132 @@
+{
+  "name": "Semantic Config IDE documentation contract",
+  "documentationVersion": "2026-08-21",
+  "verifiedImplementation": {
+    "package": "ide-frontend",
+    "version": "0.1.2",
+    "releaseDate": "2026-08-20",
+    "verifiedDate": "2026-08-21"
+  },
+  "primaryAiEntry": "START_HERE_FOR_AI.md",
+  "readingOrder": [
+    "START_HERE_FOR_AI.md",
+    "CONFIG_ADAPTATION_WORKFLOW.md",
+    "CONFIG_MODEL.md",
+    "DIRECTIVES.md",
+    "PUBLIC_EXPORT.md",
+    "IMPORT_EXPORT.md",
+    "PROJECT_EVOLUTION.md",
+    "EXAMPLES.md",
+    "CHANGELOG.md",
+    "MIGRATION_REPORT_TEMPLATE.md"
+  ],
+  "canonicalMigrationRules": [
+    "Use explicit //@config for every intended logical config.",
+    "Use exactly one explicit //@template per logical config.",
+    "Never turn the first real runtime entity into a template.",
+    "Preserve runtime semantics unless an intentional change is documented.",
+    "Do not infer PK, FK, enum, range, optionality, default, or public visibility without evidence.",
+    "Use canonical directive spellings in migrated files.",
+    "Public-only export is fail-closed and must include projected JSON, templates, schemas, and generated code.",
+    "Produce a migration report and a ready archive when requested."
+  ],
+  "supportedExportVisibilityModes": [
+    "full",
+    "publicOnly"
+  ],
+  "supportedReadyExportStructures": [
+    "projectStructure",
+    "flatFolder",
+    "singleCombinedFiles"
+  ],
+  "canonicalDirectives": [
+    "config",
+    "template",
+    "primary_key",
+    "foreign_key",
+    "public",
+    "private",
+    "type",
+    "optional",
+    "nullable",
+    "defaultValue",
+    "enum",
+    "regex",
+    "clamp",
+    "array_length",
+    "uniqueBy",
+    "choiceBetween",
+    "one_of",
+    "union",
+    "global_type",
+    "local_type",
+    "ref_type",
+    "global_enum",
+    "local_enum",
+    "ref_enum",
+    "name",
+    "elements_name",
+    "items",
+    "codegen",
+    "desc",
+    "order",
+    "first",
+    "sort_elements",
+    "sort_config",
+    "sort_properties",
+    "ignore_property",
+    "ignore_element"
+  ],
+  "recognizedCompatibilityAliases": {
+    "one_of": [
+      "oneOf"
+    ],
+    "elements_name": [
+      "elementsName"
+    ],
+    "array_length": [
+      "arrayLength",
+      "array_lenght"
+    ],
+    "uniqueBy": [
+      "unique_by"
+    ],
+    "choiceBetween": [
+      "choice_between"
+    ],
+    "type bool": [
+      "type boolean"
+    ],
+    "sort_elements": [
+      "sort_config for one key"
+    ]
+  },
+  "examplesDirectory": "examples",
+  "reportTemplate": "MIGRATION_REPORT_TEMPLATE.md",
+  "chatHandoffPrompt": "CHAT_HANDOFF_PROMPT.md",
+  "productChangelog": "CHANGELOG.md",
+  "projectEvolutionGuide": "PROJECT_EVOLUTION.md",
+  "projectEvolutionCapabilities": [
+    "projectGroups",
+    "orderedProjectVersions",
+    "fileDiff",
+    "configSemanticDiff",
+    "primaryKeyEntityDiff",
+    "propertyDiff",
+    "standaloneProjectAnalytics",
+    "projectGroupAnalytics",
+    "activityCalendar",
+    "draftReleasedArchivedLifecycle",
+    "immutableReleaseSnapshots",
+    "releaseSha256"
+  ],
+  "supportedProjectFileKinds": {
+    "semantic": [
+      "json",
+      "jsonc"
+    ],
+    "nonSemanticSupporting": [
+      "md"
+    ]
+  }
+}
